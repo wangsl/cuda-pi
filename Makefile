@@ -11,7 +11,7 @@ NVCC = nvcc
 
 TYPEDEF = #-DFLOAT
 
-NVCCINCLUDE = -I${CUDA_ROOT}/samples/common/inc
+NVCCINCLUDE = -I$(CUDA_ROOT)/samples/common/inc
 
 CFLAGS = $(NVCCINCLUDE) $(TYPEDEF)
 
@@ -20,7 +20,8 @@ CFLAGS = $(NVCCINCLUDE) $(TYPEDEF)
 FFLAGS = $(TYPEDEF)
 
 NVCCFLAGS = -gencode arch=compute_20,code=sm_20 \
-	 -gencode arch=compute_30,code=sm_30 -use_fast_math -O3 \
+	-gencode arch=compute_35,code=sm_35 \
+	-gencode arch=compute_37,code=sm_37 -use_fast_math -O3 \
 	$(NVCCINCLUDE) $(TYPEDEF) -Xcompiler=\"-fPIC -pthread -fexceptions -m64\"
 
 Link = $(CCC) $(CFLAGS)
@@ -29,7 +30,7 @@ LIBS = -L$(CUDA_LIB) -lcudart  -lifcore
 
 EXENAME = t1
 
-OBJS =	$(O)/main.o  $(O)/pi.o  $(O)/pi-omp.o  $(O)/mainF.o
+OBJS =	$(O)/main.o  $(O)/pi.o  $(O)/pi-omp.o  $(O)/mainF.o  $(O)/gpuprop.o
 
 $(EXENAME) : $(OBJS) 
 	$(Link) -o $(EXENAME) $(OBJS)  $(LIBS) 

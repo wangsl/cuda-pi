@@ -9,10 +9,14 @@ void calculate_pi_with_device(const int block_dim, const int grid_dim);
 
 void pi_with_openmp();
 
+void gpu_test();
+
 extern "C" void FORT(fortrantest)(const int &block_dim, const int &grid_dim);
 
 int main(int argc, const char * argv[])
 {
+  gpu_test();
+
   int block_dim = 512;
   int grid_dim = 512;
   int n = 1;
