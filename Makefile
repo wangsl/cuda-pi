@@ -30,7 +30,8 @@ LIBS = -L$(CUDA_LIB) -lcudart  -lifcore
 
 EXENAME = t1
 
-OBJS =	$(O)/main.o  $(O)/pi.o  $(O)/pi-omp.o  $(O)/mainF.o  $(O)/gpuprop.o
+OBJS =	$(O)/main.o  $(O)/pi.o  $(O)/pi-omp.o  $(O)/mainF.o \
+	 $(O)/gpuprop.o $(O)/gpuinfo.o
 
 $(EXENAME) : $(OBJS) 
 	$(Link) -o $(EXENAME) $(OBJS)  $(LIBS) 
