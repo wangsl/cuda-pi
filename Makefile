@@ -9,7 +9,8 @@ CC = icc
 CCC = icpc
 NVCC = nvcc
 
-TYPEDEF = #-DFLOAT
+TYPEDEF = -DReal=double #-DFLOAT
+#TYPEDEF = -DReal=float
 
 NVCCINCLUDE = -I$(CUDA_ROOT)/samples/common/inc
 

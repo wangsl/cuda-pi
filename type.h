@@ -6,7 +6,7 @@
 
 #ifdef FLOAT
 
-typedef float Real;
+//typedef float Real;
 #define _one_ 1.0f
 #define _zero_ 0.0f
 #define _pt5_ 0.5f
@@ -14,7 +14,7 @@ typedef float Real;
 
 #else
 
-typedef double Real;
+//typedef double Real;
 #define _one_ 1.0
 #define _zero_ 0.0
 #define _pt5_ 0.5

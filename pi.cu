@@ -7,6 +7,18 @@ using namespace std;
 #include "type.h"
 #include "fort.h"
 
+__device__ double atomicAdd(double *address, double val)
+{
+  unsigned long long int* address_as_ull = (unsigned long long int*)address;
+  unsigned long long int old = *address_as_ull, assumed;
+  do {
+    assumed = old;
+    old = atomicCAS(address_as_ull, assumed,
+		    __double_as_longlong(val + __longlong_as_double(assumed)));
+  } while (assumed != old);
+  return __longlong_as_double(old);
+}
+
 inline bool is_pow_2(int x) { return ((x&(x-1)) == 0); }
 
 __constant__ __device__ Real step;
@@ -46,8 +58,8 @@ template<int block_size> __device__ void _calculate_pi_with_device_(Real *block_
     __syncthreads();
   }
   
-  if(threadIdx.x == 0)
-    block_sum[blockIdx.x] = s_data[0];
+  if(threadIdx.x == 0) 
+    atomicAdd(block_sum, s_data[0]);
 }
 
 __global__ void calculate_pi_with_device_wrapper(const int block_dim, Real *block_sum, int n_grids)
@@ -124,37 +136,27 @@ void calculate_pi_with_device(const int block_dim, const int grid_dim)
   checkCudaErrors(cudaMemcpyToSymbol(step, &dx, sizeof(Real)));
 
   Real *block_sum = 0;
-  checkCudaErrors(cudaMalloc((void **) &block_sum, sizeof(Real)*grid_dim));
-  checkCudaErrors(cudaMemset(block_sum, 0, sizeof(Real)*grid_dim));
+  checkCudaErrors(cudaMalloc((void **) &block_sum, sizeof(Real)));
+  checkCudaErrors(cudaMemset(block_sum, 0, sizeof(Real)));
+
 
   const int share_memory_size = sizeof(Real)*block_dim;
   calculate_pi_with_device_wrapper<<<grid_dim, block_dim, share_memory_size>>>(block_dim, block_sum, n);
 
-  Real *block_sum_host = new Real [grid_dim];
-  assert(block_sum_host);
-  memset(block_sum_host, 0, grid_dim*sizeof(Real));
-
-  checkCudaErrors(cudaMemcpy(block_sum_host, block_sum, sizeof(Real)*grid_dim, cudaMemcpyDeviceToHost));
-
+  Real block_sum_host = 0.0;
+  checkCudaErrors(cudaMemcpy(&block_sum_host, block_sum, sizeof(Real), cudaMemcpyDeviceToHost));
+  
   if(block_sum) { checkCudaErrors(cudaFree(block_sum)); block_sum = 0; }
   
-  Real pi = _zero_;
-  for(int i = 0; i < grid_dim; i++) 
-    pi += block_sum_host[i];
-
+  Real pi = block_sum_host;
   pi -= _pt5_ * (myf(_zero_) + myf(_one_));
-
   pi *= 4*dx;
 
-  if(block_sum_host) { delete [] block_sum_host; block_sum_host = 0; }
-
   cout << "        Pi = " << setprecision(16) << pi << "\n"
-
        << " analytical: " << setprecision(16) << 2.0*asin(1.0) << endl;
 }
 
 // Fotran version: CalculatePiWithDevice
-
 extern "C" void FORT(calculatepiwithdevice)(const int &block_dim, const int &grid_dim)
 {
   calculate_pi_with_device(block_dim, grid_dim);
