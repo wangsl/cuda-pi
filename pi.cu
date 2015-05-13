@@ -58,8 +58,10 @@ template<int block_size> __device__ void _calculate_pi_with_device_(Real *block_
     __syncthreads();
   }
   
-  if(threadIdx.x == 0) 
+  if(threadIdx.x == 0) {
     atomicAdd(block_sum, s_data[0]);
+    //printf("Block %d, sum = %f\n", blockIdx.x, s_data[0]*step);
+  }
 }
 
 __global__ void calculate_pi_with_device_wrapper(const int block_dim, Real *block_sum, int n_grids)
